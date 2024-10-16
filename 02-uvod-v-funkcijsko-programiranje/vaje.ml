@@ -19,6 +19,7 @@ predstavljen s seznamom števil s plavajočo vejico, pomnoži z danim skalarjem.
 
 let razteg k v = List.map (( *. ) k) v (*pika zraven zvezdice ker so floati; pisali smo kot funkcijo na k-ju*)
 (*tudi brez v lahko, ker idrk*)
+
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `sestej : vector -> vector -> vector`, ki vrne vsoto dveh 
 vektorjev.
@@ -27,12 +28,19 @@ vektorjev.
 let sestej v1 v2 = List.map2 (+.) v1 v2
 (*map2 uporabljamo za razcep dveh vektorjev oz listov
 lahko tudi brez v1 in v2, ker je že definirano*)
+
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `skalarni_produkt : vector -> vector -> float`, ki izračuna 
 skalarni produkt dveh vektorjev
 [*----------------------------------------------------------------------------*)
 
-let skalarni_produkt v1 v2 = ()
+let sestej_elemente = List.fold_left ( +. ) 0.
+
+let skalarni_produkt v1 v2 = 
+  sestej_elemente ( List.map2 ( +. ) v1 v2)
+
+(*ali kot kompozitum:
+vsota_seznama @@ List.map2 ( *. ) v1 v2*)
 
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `norma : vector -> float`, ki vrne evklidsko normo vektorja.
