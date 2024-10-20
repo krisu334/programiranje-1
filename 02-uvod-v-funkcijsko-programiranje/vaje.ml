@@ -34,26 +34,23 @@ Napišite funkcijo `skalarni_produkt : vector -> vector -> float`, ki izračuna
 skalarni produkt dveh vektorjev
 [*----------------------------------------------------------------------------*)
 
-let sestej_elemente = List.fold_left ( +. ) 0.
+let vsota_seznama = List.fold_left ( +. ) 0.
 
 let skalarni_produkt v1 v2 = 
-  sestej_elemente ( List.map2 ( +. ) v1 v2)
-
-(*ali kot kompozitum:
-vsota_seznama @@ List.map2 ( *. ) v1 v2*)
+  vsota_seznama @@ List.map2 ( *. ) v1 v2
 
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `norma : vector -> float`, ki vrne evklidsko normo vektorja.
 [*----------------------------------------------------------------------------*)
 
-let rec norma = ()
+let norma v = sqrt (skalarni_produkt v v)
 
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `projeciraj : vector -> vector -> vector`, ki izračuna 
 projekcijo prvega vektorja na drugega.
 [*----------------------------------------------------------------------------*)
 
-let rec projeciraj = ()
+let projeciraj v1 v2 = razteg ((1. /. (norma v2 ** 2.)) *. skalarni_produkt v1 v2) v2
 
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `ovij : string -> string -> string`, ki sprejme ime HTML 
@@ -64,7 +61,8 @@ Primer:
 
 [*----------------------------------------------------------------------------*)
 
-let rec ovij = ()
+let ovij oznaka vsebina = 
+  "<" ^ oznaka ^ ">" ^ vsebina ^ "</" ^ oznaka ^ ">"
 
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `zamakni : int -> string -> string`, ki sprejme število 
@@ -75,7 +73,12 @@ Primer:
 
 [*----------------------------------------------------------------------------*)
 
-let rec zamakni = ()
+let zamakni n vsebina =
+  let presledki = String.make n ' ' in (* naredi string ki vkljucuje presledke*)
+  vsebina
+  |> String.split_on_char '\n' (*naredi list iz stringov, kjer smo ločili glede na \n*)
+  |> List.map (String.cat presledki) (*list.map pomeni da vsakemu elementu niza naredimo nekaj: doda presledke - string.cat*)
+  |> String.concat "\n" (*zdruzi list v nov string z \n vmes*)
 
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `ul : string list -> string`, ki sprejme seznam nizov in vrne 
@@ -86,7 +89,13 @@ Primer:
 
 [*----------------------------------------------------------------------------*)
 
-let rec ul = ()
+let ul seznam = 
+  seznam
+  |> List.map (ovij "li")
+  |> String.concat "\n"
+  |> zamakni 2
+  |> (fun content -> "\n" ^ content ^ "\n")
+  |> ovij "ul"
 
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `razdeli_vrstico : string -> string * string`, ki sprejme niz, 
