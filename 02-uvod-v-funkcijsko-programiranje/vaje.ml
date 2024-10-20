@@ -64,6 +64,8 @@ Primer:
 let ovij oznaka vsebina = 
   "<" ^ oznaka ^ ">" ^ vsebina ^ "</" ^ oznaka ^ ">"
 
+  (*ta znak ^ merga stringe*)
+
 (*----------------------------------------------------------------------------*]
 Napišite funkcijo `zamakni : int -> string -> string`, ki sprejme število 
 presledkov in niz ter vrne niz, v katerem je vsaka vrstica zamaknjena za ustrezno število presledkov.
