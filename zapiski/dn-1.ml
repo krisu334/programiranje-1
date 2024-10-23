@@ -10,23 +10,22 @@ let rec stevke b n =
 
 (** Začetek seznama *)
 
-(* let primer_1_4 = take 3 [ 1; 2; 3; 4; 5 ] *)
-(* let primer_1_5 = take 10 [ 1; 2; 3; 4; 5 ] *)
+let rec take n list =
+   match n, list with
+   | 0, _ -> []
+   | _, [] -> []
+   | _, x :: xs -> x :: take (n - 1) xs
 
 (** Odstranjevanje ujemajočih *)
 
-let drop_while _ _ = failwith __LOC__
-(* let primer_1_6 = drop_while (fun x -> x < 5) [ 3; 1; 4; 1; 5; 9; 2; 6; 5; 3; 5 ] *)
-(* let primer_1_7 = drop_while (fun x -> x < 5) [ 9; 8; 7; 6; 5; 4; 3; 2; 1; 0 ] *)
+let rec drop_while p list =
+   match list with
+   | [] -> []
+   | x :: xs -> if p x then drop_while p xs else list
 
 (** Funkcija `filter_mapi` *)
 
 let filter_mapi _ _ = failwith __LOC__
-
-(* let primer_1_8 =
-   filter_mapi
-     (fun i x -> if i mod 2 = 0 then Some (x * x) else None)
-     [ 1; 2; 3; 4; 5; 6; 7; 8; 9 ] *)
 
 (* ## Izomorfizmi množic *)
 
@@ -34,18 +33,24 @@ type ('a, 'b) sum = In1 of 'a | In2 of 'b
 
 (** $A \times B \cong B \times A$ *)
 
-let phi1 _ = failwith __LOC__
-let psi1 _ = failwith __LOC__
+let phi1 (a, b) = (b, a)
+let psi1 (b, a) = (a, b)
 
 (** $A + B \cong B + A$ *)
 
-let phi2 _ = failwith __LOC__
-let psi2 _ = failwith __LOC__
+let phi2 x =
+   match x with
+   | In1 a -> In2 a
+   | In2 b -> In1 b
+let psi2 x =
+   match x with
+   | In1 b -> In2 b
+   | In2 a -> In1 a
 
 (** $A \times (B \times C) \cong (A \times B) \times C$ *)
 
-let phi3 _ = failwith __LOC__
-let psi3 _ = failwith __LOC__
+let phi3 (a, (b, c)) = ((a, b), c)
+let psi3 ((a, b), c) = (a, (b, c))
 
 (** $A + (B + C) \cong (A + B) + C$ *)
 
