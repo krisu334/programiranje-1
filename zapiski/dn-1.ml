@@ -54,18 +54,39 @@ let psi3 ((a, b), c) = (a, (b, c))
 
 (** $A + (B + C) \cong (A + B) + C$ *)
 
-let phi4 _ = failwith __LOC__
-let psi4 _ = failwith __LOC__
+let phi4 x = 
+   match x with
+   | In1 a -> In1 (In1 a)
+   | In2 (In1 b) -> In1 (In2 b)
+   | In2 (In2 c) -> In2 c
+let psi4 x = 
+   match x with
+   | In1 (In1 a) -> In1 a
+   | In1 (In2 b) -> In2 (In1 b)
+   | In2 c -> In2 (In2 c)
 
 (** $A \times (B + C) \cong (A \times B) + (A \times C)$ *)
 
-let phi5 _ = failwith __LOC__
-let psi5 _ = failwith __LOC__
+let phi5 (a, x) =
+   match x with
+   | In1 b -> In1 (a, b)
+   | In2 c -> In2 (a, c)
+let psi5 x =
+   match x with
+   | In1 (a, b) -> (a, In1 b)
+   | In2 (a, c) -> (a, In2 c)
 
 (** $A^{B + C} \cong A^B \times A^C$ *)
 
-let phi6 _ = failwith __LOC__
-let psi6 _ = failwith __LOC__
+let phi6 f =
+   let fb = (fun b -> f (In1 b)) in
+   let fc = (fun c -> f (In2 c)) in
+   (fb, fc)
+let psi6 (fb, fc) =
+   fun x ->
+      match x with
+      | In1 b -> fb b
+      | In2 c -> fc c
 
 (** $(A \times B)^C \cong A^C \times B^C$ *)
 
@@ -78,8 +99,17 @@ type polinom = int list
 
 (** Odstranjevanje odvečnih ničel *)
 
-let pocisti _ = failwith __LOC__
-(* let primer_3_1 = pocisti [ 1; -2; 3; 0; 0 ] *)
+let rec pocisti (seznam : polinom) : polinom =
+   match seznam with
+   | [] -> [0]
+   | [0] -> [0]
+   | x :: xs ->
+       let nov_seznam = pocisti xs in
+       if nov_seznam = [0] && x = 0 then [0]
+       else if x = 0 then nov_seznam
+       else x :: nov_seznam
+   
+       (*NI ŠE PRAVILNO*)
 
 (** Seštevanje *)
 
