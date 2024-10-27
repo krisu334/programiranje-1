@@ -106,7 +106,7 @@ let rec pocisti (seznam : polinom) : polinom =
    | x :: xs ->
        let nov_seznam = pocisti xs in
        if nov_seznam = [0] && x = 0 then [0]
-       else if x = 0 then nov_seznam
+       else if x = 0 && nov_seznam = [] then []
        else x :: nov_seznam
    
        (*NI ŠE PRAVILNO*)
