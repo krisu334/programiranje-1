@@ -98,24 +98,35 @@ let psi7 _ = failwith __LOC__
 type polinom = int list
 
 (** Odstranjevanje odvečnih ničel *)
+let skrajsaj seznam = 
+   match List.rev seznam with
+   | [] -> []
+   | _ :: tl -> List.rev tl
+
+let zadnji lst = 
+   match List.rev lst with
+   | [] -> None
+   | x :: _ -> Some x
 
 let rec pocisti (seznam : polinom) : polinom =
-   match seznam with
-   | [] -> [0]
-   | [0] -> [0]
-   | x :: xs ->
-       let nov_seznam = pocisti xs in
-       if nov_seznam = [0] && x = 0 then [0]
-       else if x = 0 && nov_seznam = [] then []
-       else x :: nov_seznam
-   
-       (*NI ŠE PRAVILNO*)
+   match zadnji seznam with
+   | Some 0 -> pocisti (skrajsaj seznam)
+   | _ -> if seznam = [] then [0] else seznam
 
 (** Seštevanje *)
 
-let ( +++ ) _ _ = failwith __LOC__
-(* let primer_3_2 = [ 1; -2; 3 ] +++ [ 1; 2 ] *)
-(* let primer_3_3 = [ 1; -2; 3 ] +++ [ 1; 2; -3 ] *)
+let rec sestej (sez1 : polinom) (sez2 : polinom) : polinom =
+   match (sez1, sez2) with
+   | ([], []) -> []
+   | ([], _) -> sez2
+   | (_, []) -> sez1
+   | (x :: xs, y :: ys) ->
+       let vsota = x + y in
+       vsota :: sestej xs ys
+
+let ( +++ ) sez1 sez2 =
+   let sesteto = sestej sez1 sez2 in
+   pocisti sesteto
 
 (** Množenje *)
 
