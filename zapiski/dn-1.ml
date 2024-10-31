@@ -223,17 +223,20 @@ let crka i = Char.chr (i + Char.code 'A')
 
 (** Šifriranje *)
 
-let sifriraj _ _ = failwith __LOC__
-(* let primer_5_1 = sifriraj quick_brown_fox "HELLO, WORLD!" *)
-(* let primer_5_2 = "VENI, VIDI, VICI" |> sifriraj rot13 *)
-(* let primer_5_3 = "VENI, VIDI, VICI" |> sifriraj rot13 |> sifriraj rot13 *)
+let sifriraj pravilo stavek =
+   String.map (fun c ->
+      if 'A' <= c && c <= 'Z' then let index = indeks c in pravilo.[index]
+      else c) stavek
 
 (** Inverzni ključ *)
 
-let inverz _ = failwith __LOC__
-(* let primer_5_4 = inverz quick_brown_fox *)
-(* let primer_5_5 = inverz rot13 = rot13 *)
-(* let primer_5_6 = inverz "BCDEA" *)
+let inverz pravilo =
+   let inverse_pravilo = Array.make 26 ' ' in
+   String.iteri (fun i c ->
+     let index = indeks c in
+     inverse_pravilo.(index) <- crka i
+   ) pravilo;
+   String.concat "" (Array.to_list (Array.map (String.make 1) inverse_pravilo))
 
 (** Ugibanje ključa *)
 
