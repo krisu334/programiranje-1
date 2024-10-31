@@ -181,10 +181,6 @@ let izpis _ = failwith __LOC__
 
 let priblizek_odvoda f x0 h = (f (x0 +. h) -. f x0) /. h
 
-(* let primer_3_11 =
-   let f x = sin x +. cos x +. exp x in
-   List.map (priblizek_odvoda f 1.) [ 0.1; 0.01; 0.001; 0.0001; 0.00001 ] *)
-
 type odvedljiva = (float -> float) * (float -> float)
 
 let sinus : odvedljiva = (sin, cos)
