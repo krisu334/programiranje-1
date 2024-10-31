@@ -130,19 +130,45 @@ let ( +++ ) sez1 sez2 =
 
 (** Množenje *)
 
-let ( *** ) _ _ = failwith __LOC__
-(* let primer_3_4 = [ 1; 1 ] *** [ 1; 1 ] *** [ 1; 1 ] *)
-(* let primer_3_5 = [ 1; 1 ] *** [ 1; -1 ] *)
+let rec dodaj_nicle polinom n =
+   if n <= 0 then polinom else 0 :: dodaj_nicle polinom (n - 1)
+
+let pomnozi_koeficient koeficient polinom2 stopnja =
+   dodaj_nicle (List.map (fun koeficient2 -> koeficient * koeficient2) polinom2) stopnja
+
+let ( *** ) (pol1 : polinom) (pol2 : polinom) : polinom =
+   let rec pomnozi pol1 stopnja =
+      match pol1 with
+      | [] -> []
+      | koeficient :: ostalo ->
+         let delni_rezultat = pomnozi_koeficient koeficient pol2 stopnja in
+         delni_rezultat +++ pomnozi ostalo (stopnja + 1)
+      in  pomnozi pol1 0
 
 (** Izračun vrednosti v točki *)
 
-let vrednost _ _ = failwith __LOC__
-(* let primer_3_6 = vrednost [ 1; -2; 3 ] 2 *)
+let rec potenciranje_int osnova stopnja =
+   if stopnja = 0 then 1 else osnova * potenciranje_int osnova (stopnja - 1)
+
+let vrednost (polinom : polinom) n =
+   let rec izracunaj polinom stopnja =
+      match polinom with
+      | [] -> 0
+      | koeficient :: ostalo -> 
+         (koeficient * (potenciranje_int n stopnja) + izracunaj ostalo (stopnja + 1))
+   in izracunaj polinom 0
+
 
 (** Odvajanje *)
 
-let odvod _ = failwith __LOC__
-(* let primer_3_7 = odvod [ 1; -2; 3 ] *)
+let odvod (polinom : polinom) : polinom =
+   let rec izracunaj_odvod polinom stopnja =
+      match polinom with
+      | [] -> []
+      | koeficient :: ostalo ->
+         if stopnja = 0 then izracunaj_odvod ostalo (stopnja + 1)
+         else (stopnja * koeficient) :: izracunaj_odvod ostalo (stopnja + 1)
+      in izracunaj_odvod polinom 0
 
 (** Lep izpis *)
 
@@ -169,13 +195,9 @@ let ( ++. ) : odvedljiva -> odvedljiva -> odvedljiva =
  (* pozorni bodite, da anonimni funkciji v paru date med oklepaje *)
  fun (f, f') (g, g') -> ((fun x -> f x +. g x), fun x -> f' x +. g' x)
 
-(* let primer_3_12 =
-   let _, f' = sinus ++. kosinus ++. eksp in
-   f' 1. *)
-
 (** Vrednost odvoda *)
 
-let vrednost _ _ = failwith __LOC__
+let vrednost2 _ _ = failwith __LOC__
 let odvod _ _ = failwith __LOC__
 
 (** Osnovne funkcije *)
