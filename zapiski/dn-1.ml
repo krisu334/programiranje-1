@@ -25,7 +25,15 @@ let rec drop_while p list =
 
 (** Funkcija `filter_mapi` *)
 
-let filter_mapi _ _ = failwith __LOC__
+let filter_mapi f list =
+   let rec pomozna i sez =
+     match sez with
+     | [] -> []
+     | x :: xs ->
+       (match f i x with
+        | Some y -> y :: pomozna (i + 1) xs
+        | None -> pomozna (i + 1) xs)
+   in pomozna 0 list
 
 (* ## Izomorfizmi množic *)
 
@@ -90,8 +98,12 @@ let psi6 (fb, fc) =
 
 (** $(A \times B)^C \cong A^C \times B^C$ *)
 
-let phi7 _ = failwith __LOC__
-let psi7 _ = failwith __LOC__
+let phi7 (f : 'c -> 'a * 'b) : ('c -> 'a) * ('c -> 'b) =
+   let fa = (fun c -> fst (f c)) in
+   let fb = (fun c -> snd (f c)) in
+   (fa, fb)
+let psi7 ((fa, fb) : ('c -> 'a) * ('c -> 'b)) : 'c -> ('a * 'b) =
+  fun c -> (fa c, fb c)
 
 (* ## Polinomi *)
 
@@ -158,17 +170,17 @@ let vrednost (polinom : polinom) n =
          (koeficient * (potenciranje_int n stopnja) + izracunaj ostalo (stopnja + 1))
    in izracunaj polinom 0
 
-
 (** Odvajanje *)
 
-let odvod (polinom : polinom) : polinom =
-   let rec izracunaj_odvod polinom stopnja =
-      match polinom with
+let mnozi_indeks (polinom : polinom) : polinom =
+   let rec pomozna sez indeks =
+      match sez with
       | [] -> []
-      | koeficient :: ostalo ->
-         if stopnja = 0 then izracunaj_odvod ostalo (stopnja + 1)
-         else (stopnja * koeficient) :: izracunaj_odvod ostalo (stopnja + 1)
-      in izracunaj_odvod polinom 0
+      | x :: xs -> (x * indeks) :: pomozna xs (indeks + 1)
+   in pomozna polinom 0
+
+let odvod (polinom : polinom) : polinom =
+   List.tl (mnozi_indeks polinom)
 
 (** Lep izpis *)
 
