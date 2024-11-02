@@ -184,6 +184,11 @@ let odvod (polinom : polinom) : polinom =
 
 (** Lep izpis *)
 
+let rec nadnapis n =
+   let eksponent = ["⁰"; "¹"; "²"; "³"; "⁴"; "⁵"; "⁶"; "⁷"; "⁸"; "⁹"] in
+   if n < 10 then List.nth eksponent n
+   else nadnapis (n / 10) ^ List.nth eksponent (n mod 10)
+
 let izpis _ = failwith __LOC__
 (* let primer_3_8 = izpis [ 1; 2; 1 ] *)
 (* let primer_3_9 = izpis [ 1; 0; -1; 0; 1; 0; -1; 0; 1; 0; -1; 0; 1 ] *)
@@ -206,7 +211,7 @@ let ( ++. ) : odvedljiva -> odvedljiva -> odvedljiva =
 (** Vrednost odvoda *)
 
 let vrednost2 ((f, _) : odvedljiva) x = f x
-let odvod ((_, g) : odvedljiva) x = g x
+let odvod2 ((_, g) : odvedljiva) x = g x
 
 (** Osnovne funkcije *)
 
@@ -333,13 +338,10 @@ let besede =
    dear enemy reply drink occur support speech nature range steam motion path \
    liquid log meant quotient teeth shell neck"
 
-let slovar = [ (* TODO *) ]
-(* let primer_5_7 = take 42 slovar *)
-(* let primer_5_8 = List.nth slovar 321 *)
-
-(* Med ugibanjem seveda ne bomo poznali celotnega ključa. V tem primeru bomo za neznane črke uporabili znak `_`. Na primer, če bi vedeli, da je črka `A` v besedilu šifrirana kot `X`, črka `C` pa kot `Y`, bi ključ zapisali kot `"X_Y_______________________"`. *)
-(*  *)
-(* Napišite funkcijo `dodaj_zamenjavo : string -> char * char -> string option`, ki sprejme ključ ter ga poskusi razširiti z zamenjavo dane črke. Funkcija naj vrne `None`, če razširitev vodi v ključ, ki ni bijektiven (torej če ima črka že dodeljeno drugo zamenjavo ali če smo isto zamenjavo dodelili dvema različnima črkama). *)
+let slovar = 
+   besede
+   |> String.split_on_char ' '
+   |> List.map String.uppercase_ascii
 
 (** Razširjanje ključa s črko *)
 let dodaj_zamenjavo _ _ = failwith __LOC__
