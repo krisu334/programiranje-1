@@ -205,26 +205,25 @@ let ( ++. ) : odvedljiva -> odvedljiva -> odvedljiva =
 
 (** Vrednost odvoda *)
 
-let vrednost2 _ _ = failwith __LOC__
-let odvod _ _ = failwith __LOC__
+let vrednost2 ((f, _) : odvedljiva) x = f x
+let odvod ((_, g) : odvedljiva) x = g x
 
 (** Osnovne funkcije *)
 
-let konstanta _ = failwith __LOC__
-let identiteta = ((fun _ -> failwith __LOC__), fun _ -> failwith __LOC__)
+let konstanta c : odvedljiva = ((fun _ -> c), (fun _ -> 0.))
+let identiteta : odvedljiva = ((fun x -> x), fun _ -> 1.)
 
 (** Produkt in kvocient *)
 
-let ( **. ) _ _ = failwith __LOC__
-let ( //. ) _ _ = failwith __LOC__
-(* let kvadrat = identiteta **. identiteta *)
+let ( **. ) ((f, f') : odvedljiva) ((g, g') : odvedljiva) : odvedljiva =
+   ((fun x -> f x *. g x), (fun x -> f' x *. g x +. f x *. g' x))
+let ( //. ) ((f, f') : odvedljiva) ((g, g') : odvedljiva) : odvedljiva =
+   ((fun x -> f x /. g x), (fun x -> (f' x *. g x -. f x *. g' x) /. (g x *. g x)))
 
 (** Kompozitum *)
 
-let ( @@. ) _ _ = failwith __LOC__
-(* let vedno_ena = (kvadrat @@. sinus) ++. (kvadrat @@. kosinus) *)
-(* let primer_4_1 = vrednost vedno_ena 12345. *)
-(* let primer_4_2 = odvod vedno_ena 12345. *)
+let ( @@. ) ((f, f') : odvedljiva) ((g, g') : odvedljiva) : odvedljiva =
+   ((fun x -> f (g x)), (fun x -> f' (g x) *. g' x))
 
 (* ## Substitucijska šifra *)
 
