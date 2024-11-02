@@ -190,9 +190,6 @@ let rec nadnapis n =
    else nadnapis (n / 10) ^ List.nth eksponent (n mod 10)
 
 let izpis _ = failwith __LOC__
-(* let primer_3_8 = izpis [ 1; 2; 1 ] *)
-(* let primer_3_9 = izpis [ 1; 0; -1; 0; 1; 0; -1; 0; 1; 0; -1; 0; 1 ] *)
-(* let primer_3_10 = izpis [ 0; -3; 3; -1 ] *)
 
 (* ## Samodejno odvajanje *)
 
@@ -345,10 +342,6 @@ let slovar =
 
 (** Razširjanje ključa s črko *)
 let dodaj_zamenjavo _ _ = failwith __LOC__
-
-(* let primer_5_9 = dodaj_zamenjavo "AB__E" ('C', 'X') *)
-(* let primer_5_10 = dodaj_zamenjavo "ABX_E" ('C', 'X') *)
-(* let primer_5_11 = dodaj_zamenjavo "ABY_E" ('C', 'E') *)
 
 (** Razširjanje ključa z besedo *)
 
