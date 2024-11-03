@@ -189,7 +189,23 @@ let rec nadnapis n =
    if n < 10 then List.nth eksponent n
    else nadnapis (n / 10) ^ List.nth eksponent (n mod 10)
 
-let izpis _ = failwith __LOC__
+let izpis (polinom : polinom) : string =
+   let obrnjeno = List.rev polinom in
+   let rec aux polinom stopnja =
+     match polinom with
+     | [] -> ""
+     | 0 :: xs -> aux xs (stopnja - 1)
+     | koef :: xs ->
+         let clen =
+            if stopnja = 0 then " + " ^ (string_of_int koef)
+            else if koef = 1 && stopnja = 1 then "+ x"
+            else if koef = -1 && stopnja = 1 then "- x"
+            else if koef = 1 then " + x" ^ nadnapis stopnja
+            else if koef = -1 then "- x" ^ nadnapis stopnja
+            else if stopnja = 1 then (string_of_int koef) ^ " x"
+            else (string_of_int koef) ^ " x" ^ nadnapis stopnja
+         in let rest = aux xs (stopnja - 1) in clen ^ " " ^ rest
+   in String.trim (aux obrnjeno (List.length polinom - 1))
 
 (* ## Samodejno odvajanje *)
 
