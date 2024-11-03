@@ -341,13 +341,21 @@ let slovar =
    |> List.map String.uppercase_ascii
 
 (** Razširjanje ključa s črko *)
-let dodaj_zamenjavo _ _ = failwith __LOC__
+
+let dodaj_zamenjavo (kljuc : string) ((crka1, crka2) : char * char) : string option =
+  let index = Char.code crka1 - Char.code 'A' in
+  if kljuc.[index] <> '_' && kljuc.[index] <> crka2 then None
+  else if String.contains kljuc crka2 && kljuc.[index] <> crka2 then None
+  else
+     let nov_string = 
+        String.init (String.length kljuc) (fun i ->
+           if i = index then crka2 else kljuc.[i]) in Some nov_string
 
 (** Razširjanje ključa z besedo *)
 
 (* S pomočjo funkcije `dodaj_zamenjavo` sestavite še funkcijo `dodaj_zamenjave : string -> string * string -> string option`, ki ključ razširi z zamenjavami, ki prvo besedo preslikajo v drugo. *)
 
-let dodaj_zamenjave _ _ = failwith __LOC__
+         Some (String.mapi (fun i c -> if i = index then crka 1 else c) kljuc)
 (* let primer_5_12 = dodaj_zamenjave "__________________________" ("HELLO", "KUNNJ") *)
 (* let primer_5_13 = dodaj_zamenjave "ABCDU_____________________" ("HELLO", "KUNNJ") *)
 (* let primer_5_14 = dodaj_zamenjave "ABCDE_____________________" ("HELLO", "KUNNJ") *)
