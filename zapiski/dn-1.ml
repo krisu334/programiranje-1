@@ -353,12 +353,7 @@ let dodaj_zamenjavo (kljuc : string) ((crka1, crka2) : char * char) : string opt
 
 (** Razširjanje ključa z besedo *)
 
-(* S pomočjo funkcije `dodaj_zamenjavo` sestavite še funkcijo `dodaj_zamenjave : string -> string * string -> string option`, ki ključ razširi z zamenjavami, ki prvo besedo preslikajo v drugo. *)
-
-         Some (String.mapi (fun i c -> if i = index then crka 1 else c) kljuc)
-(* let primer_5_12 = dodaj_zamenjave "__________________________" ("HELLO", "KUNNJ") *)
-(* let primer_5_13 = dodaj_zamenjave "ABCDU_____________________" ("HELLO", "KUNNJ") *)
-(* let primer_5_14 = dodaj_zamenjave "ABCDE_____________________" ("HELLO", "KUNNJ") *)
+let dodaj_zamenjave _ _ = failwith __LOC__
 
 (** Vse možne razširitve *)
 
