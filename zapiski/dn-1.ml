@@ -259,13 +259,20 @@ let sifriraj pravilo stavek =
 
 (** Inverzni ključ *)
 
+let indeks c = Char.code c - Char.code 'A'
+let crka i = Char.chr (i + Char.code 'A')
+
 let inverz pravilo =
-   let inverse_pravilo = Array.make 26 ' ' in
-   String.iteri (fun i c ->
-     let index = indeks c in
-     inverse_pravilo.(index) <- crka i
-   ) pravilo;
-   String.concat "" (Array.to_list (Array.map (String.make 1) inverse_pravilo))
+  let dolzina = String.length pravilo in
+  let rec inv i acc =
+    if i >= dolzina then acc
+    else
+      let c = pravilo.[i] in
+      let poz = indeks c in
+      let nov_acc = List.mapi (fun j ch -> if j = poz then crka i else ch) acc in
+      inv (i + 1) nov_acc
+  in let acc_zacetni = List.init dolzina (fun _ -> 'A') in
+  String.concat "" (List.map (String.make 1) (inv 0 acc_zacetni))
 
 (** Ugibanje ključa *)
 
