@@ -380,18 +380,8 @@ let dodaj_zamenjave _ _ = failwith __LOC__
 
 (** Vse možne razširitve *)
 
-(* Sestavite funkcijo `mozne_razsiritve : string -> string -> string list -> string list`, ki vzame ključ, šifrirano besedo ter slovar vseh možnih besed, vrne pa seznam vseh možnih razširitev ključa, ki šifrirano besedo slikajo v eno od besed v slovarju. *)
-
 let mozne_razsiritve _ _ _ = failwith __LOC__
-
-(* let primer_5_15 =
-   slovar
-   |> mozne_razsiritve (String.make 26 '_') "KUNNJ"
-   |> List.map (fun kljuc -> (kljuc, sifriraj kljuc "KUNNJ")) *)
 
 (** Odšifriranje *)
 
-(* Napišite funkcijo `odsifriraj : string -> string option`, ki sprejme šifrirano besedilo in s pomočjo slovarja besed ugane odšifrirano besedilo. Funkcija naj vrne `None`, če ni mogoče najti nobenega ustreznega ključa. *)
 let odsifriraj _ = failwith __LOC__
-(* let primer_5_16 = sifriraj quick_brown_fox "THIS IS A VERY HARD PROBLEM" *)
-(* let primer_5_17 = odsifriraj "VKBO BO T AUSD KTSQ MSJHNUF" *)
