@@ -166,7 +166,7 @@ let vrednost (polinom : polinom) n =
       match polinom with
       | [] -> 0
       | koeficient :: ostalo -> 
-         (koeficient * (potenciranje_int n stopnja) + izracunaj ostalo (stopnja + 1))
+      (koeficient * (potenciranje_int n stopnja) + izracunaj ostalo (stopnja + 1))
    in izracunaj polinom 0
 
 (** Odvajanje *)
