@@ -5,8 +5,8 @@
 (** Števke *)
 
 let rec stevke b n = 
-  if n < b then [n]
-  else (stevke b (n / b)) @ [n mod b]
+   if n < b then [n]
+   else (stevke b (n / b)) @ [n mod b]
 
 (** Začetek seznama *)
 
@@ -27,12 +27,12 @@ let rec drop_while p list =
 
 let filter_mapi f list =
    let rec pomozna i sez =
-     match sez with
-     | [] -> []
-     | x :: xs ->
-       (match f i x with
-        | Some y -> y :: pomozna (i + 1) xs
-        | None -> pomozna (i + 1) xs)
+      match sez with
+      | [] -> []
+      | x :: xs ->
+         (match f i x with
+         | Some y -> y :: pomozna (i + 1) xs
+         | None -> pomozna (i + 1) xs)
    in pomozna 0 list
 
 (* ## Izomorfizmi množic *)
@@ -103,7 +103,7 @@ let phi7 (f : 'c -> 'a * 'b) : ('c -> 'a) * ('c -> 'b) =
    let fb = (fun c -> snd (f c)) in
    (fa, fb)
 let psi7 ((fa, fb) : ('c -> 'a) * ('c -> 'b)) : 'c -> ('a * 'b) =
-  fun c -> (fa c, fb c)
+   fun c -> (fa c, fb c)
 
 (* ## Polinomi *)
 
@@ -133,8 +133,8 @@ let rec sestej (sez1 : polinom) (sez2 : polinom) : polinom =
    | ([], _) -> sez2
    | (_, []) -> sez1
    | (x :: xs, y :: ys) ->
-       let vsota = x + y in
-       vsota :: sestej xs ys
+      let vsota = x + y in
+      vsota :: sestej xs ys
 
 let ( +++ ) sez1 sez2 =
    let sesteto = sestej sez1 sez2 in
@@ -167,7 +167,7 @@ let vrednost (polinom : polinom) n =
       match polinom with
       | [] -> 0
       | koeficient :: ostalo -> 
-         (koeficient * (potenciranje_int n stopnja) + izracunaj ostalo (stopnja + 1))
+      (koeficient * (potenciranje_int n stopnja) + izracunaj ostalo (stopnja + 1))
    in izracunaj polinom 0
 
 (** Odvajanje *)
