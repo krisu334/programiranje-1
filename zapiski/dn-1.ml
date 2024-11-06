@@ -154,7 +154,7 @@ let ( *** ) (pol1 : polinom) (pol2 : polinom) : polinom =
       | koeficient :: ostalo ->
          let delni_rezultat = pomnozi_koeficient koeficient pol2 stopnja in
          delni_rezultat +++ pomnozi ostalo (stopnja + 1)
-      in  pomnozi pol1 0
+      in pomnozi pol1 0
 
 (** Izračun vrednosti v točki *)
 
@@ -203,7 +203,7 @@ let izpis (polinom : polinom) : string =
             else if koef = -1 then "- x" ^ nadnapis stopnja
             else if stopnja = 1 then (string_of_int koef) ^ " x"
             else (string_of_int koef) ^ " x" ^ nadnapis stopnja
-         in let rest = aux xs (stopnja - 1) in clen ^ " " ^ rest
+         in let ostalo = aux xs (stopnja - 1) in clen ^ " " ^ ostalo
    in String.trim (aux obrnjeno (List.length polinom - 1))
 
 (* ## Samodejno odvajanje *)
@@ -365,10 +365,9 @@ let dodaj_zamenjavo (izraz : string) ((crka1, crka2) : char * char) : string opt
    let index = indeks crka1 in
    if izraz.[index] <> '_' && izraz.[index] <> crka2 then None
    else if String.contains izraz crka2 && izraz.[index] <> crka2 then None
-   else
-      let nov_string = 
-         String.init (String.length izraz) (fun i ->
-            if i = index then crka2 else izraz.[i]) in Some nov_string
+   else let nov_string = 
+      String.init (String.length izraz) (fun i ->
+         if i = index then crka2 else izraz.[i]) in Some nov_string
 
 (** Razširjanje ključa z besedo *)
 
