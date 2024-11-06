@@ -5,8 +5,8 @@
 (** Števke *)
 
 let rec stevke b n = 
-  if n < b then [n]
-  else (stevke b (n / b)) @ [n mod b]
+   if n < b then [n]
+   else (stevke b (n / b)) @ [n mod b]
 
 (** Začetek seznama *)
 
@@ -27,12 +27,12 @@ let rec drop_while p list =
 
 let filter_mapi f list =
    let rec pomozna i sez =
-     match sez with
-     | [] -> []
-     | x :: xs ->
-       (match f i x with
-        | Some y -> y :: pomozna (i + 1) xs
-        | None -> pomozna (i + 1) xs)
+      match sez with
+      | [] -> []
+      | x :: xs ->
+         (match f i x with
+         | Some y -> y :: pomozna (i + 1) xs
+         | None -> pomozna (i + 1) xs)
    in pomozna 0 list
 
 (* ## Izomorfizmi množic *)
@@ -103,7 +103,7 @@ let phi7 (f : 'c -> 'a * 'b) : ('c -> 'a) * ('c -> 'b) =
    let fb = (fun c -> snd (f c)) in
    (fa, fb)
 let psi7 ((fa, fb) : ('c -> 'a) * ('c -> 'b)) : 'c -> ('a * 'b) =
-  fun c -> (fa c, fb c)
+   fun c -> (fa c, fb c)
 
 (* ## Polinomi *)
 
@@ -113,10 +113,10 @@ type polinom = int list
 let skrajsaj seznam = 
    match List.rev seznam with
    | [] -> []
-   | _ :: tl -> List.rev tl
+   | _ :: xs -> List.rev xs
 
-let zadnji lst = 
-   match List.rev lst with
+let zadnji seznam = 
+   match List.rev seznam with
    | [] -> None
    | x :: _ -> Some x
 
@@ -133,12 +133,11 @@ let rec sestej (sez1 : polinom) (sez2 : polinom) : polinom =
    | ([], _) -> sez2
    | (_, []) -> sez1
    | (x :: xs, y :: ys) ->
-       let vsota = x + y in
-       vsota :: sestej xs ys
+      let vsota = x + y in
+      vsota :: sestej xs ys
 
 let ( +++ ) sez1 sez2 =
-   let sesteto = sestej sez1 sez2 in
-   pocisti sesteto
+   pocisti (sestej sez1 sez2)
 
 (** Množenje *)
 
@@ -254,25 +253,22 @@ let crka i = Char.chr (i + Char.code 'A')
 
 let sifriraj pravilo stavek =
    String.map (fun c ->
-      if 'A' <= c && c <= 'Z' then let index = indeks c in pravilo.[index]
+      if 'A' <= c && c <= 'Z' then 
+      let index = indeks c in pravilo.[index]
       else c) stavek
 
 (** Inverzni ključ *)
 
-let indeks c = Char.code c - Char.code 'A'
-let crka i = Char.chr (i + Char.code 'A')
-
 let inverz pravilo =
-  let dolzina = String.length pravilo in
-  let rec inv i acc =
-    if i >= dolzina then acc
-    else
+   let dolzina = String.length pravilo in
+   let rec inv i acc =
+      if i >= dolzina then acc else
       let c = pravilo.[i] in
       let poz = indeks c in
       let nov_acc = List.mapi (fun j ch -> if j = poz then crka i else ch) acc in
       inv (i + 1) nov_acc
-  in let acc_zacetni = List.init dolzina (fun _ -> 'A') in
-  String.concat "" (List.map (String.make 1) (inv 0 acc_zacetni))
+   in let acc_zacetni = List.init dolzina (fun _ -> 'A') in
+   String.concat "" (List.map (String.make 1) (inv 0 acc_zacetni))
 
 (** Ugibanje ključa *)
 
@@ -365,18 +361,20 @@ let slovar =
 
 (** Razširjanje ključa s črko *)
 
-let dodaj_zamenjavo (kljuc : string) ((crka1, crka2) : char * char) : string option =
-  let index = Char.code crka1 - Char.code 'A' in
-  if kljuc.[index] <> '_' && kljuc.[index] <> crka2 then None
-  else if String.contains kljuc crka2 && kljuc.[index] <> crka2 then None
-  else
-     let nov_string = 
-        String.init (String.length kljuc) (fun i ->
-           if i = index then crka2 else kljuc.[i]) in Some nov_string
+let dodaj_zamenjavo (izraz : string) ((crka1, crka2) : char * char) : string option =
+   let index = indeks crka1 in
+   if izraz.[index] <> '_' && izraz.[index] <> crka2 then None
+   else if String.contains izraz crka2 && izraz.[index] <> crka2 then None
+   else
+      let nov_string = 
+         String.init (String.length izraz) (fun i ->
+            if i = index then crka2 else izraz.[i]) in Some nov_string
 
 (** Razširjanje ključa z besedo *)
 
-let dodaj_zamenjave _ _ = failwith __LOC__
+let dodaj_zamenjave izraz (beseda1, beseda2) =
+   if String.length beseda1 <> String.length beseda2 then None
+   else
 
 (** Vse možne razširitve *)
 
