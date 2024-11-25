@@ -18,7 +18,7 @@
 (*----------------------------------------------------------------------------*
  ## Podatkovni tipi
 [*----------------------------------------------------------------------------*)
-a
+
 (*----------------------------------------------------------------------------*
  Pri vsakem večjem funkcijskem programu je prvi korak definicija ustreznih
  tipov. V simulatorju bomo imeli dva glavna tipa: `instruction`, s katerim bomo
@@ -39,10 +39,7 @@ a
  procesorja **A**, **B**, **C** in **D**.
 [*----------------------------------------------------------------------------*)
 
-type register 
-
-(* let primer_tipi_1 = [[A; B; B; A]; [A; C; D; C]] *)
-(* val primer_tipi_1 : register list list = [[A; B; B; A]; [A; C; D; C]] *)
+type register = A | B | C | D
 
 (*----------------------------------------------------------------------------*
  ### Izrazi
@@ -55,10 +52,9 @@ type register
  registri ali števila.
 [*----------------------------------------------------------------------------*)
 
-type expression 
-
-(* let primer_tipi_2 = [Register B; Const 42] *)
-(* val primer_tipi_2 : expression list = [Register B; Const 42] *)
+type expression =
+  | Register of register
+  | Const of int
 
 (*----------------------------------------------------------------------------*
  ### Naslovi
@@ -71,10 +67,7 @@ type expression
  tip z eno samo varianto `Address` s celoštevilskim argumentom.
 [*----------------------------------------------------------------------------*)
 
-type address 
-
-(* let primer_tipi_3 = (42, Address 42) *)
-(* val primer_tipi_3 : int * address = (42, Address 42) *)
+type address = Address of int
 
 (*----------------------------------------------------------------------------*
  ### Ukazi
@@ -119,33 +112,29 @@ type address
 
 type instruction =
   | MOV of register * expression
-  (* | ADD of TODO *)
-  (* | SUB of TODO *)
+  | ADD of register * expression
+  | SUB of register * expression
   | INC of register
-  (* | DEC of TODO *)
-  (* | MUL of TODO *)
+  | DEC of register
+  | MUL of expression
   | DIV of expression
-  (* | AND of TODO *)
-  (* | OR of TODO *)
-  (* | XOR of TODO *)
-  (* | NOT of TODO *)
-  (* | CMP of TODO *)
+  | AND of register * expression
+  | OR of register * expression
+  | XOR of register * expression
+  | NOT of register
+  | CMP of register * expression
   | JMP of address
-  (* | JA of TODO *)
-  (* | JAE of TODO *)
-  (* | JB of TODO *)
-  (* | JBE of TODO *)
-  (* | JE of TODO *)
-  (* | JNE of TODO *)
+  | JA of address
+  | JAE of address
+  | JB of address
+  | JBE of address
+  | JE of address
+  | JNE of address
   | CALL of address
   | RET
   | PUSH of expression
   | POP of register
   | HLT
-
-(* let primer_tipi_4 = [ MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT ] *)
-(* val primer_tipi_4 : instruction list =
-  [MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT] *)
 
 (*----------------------------------------------------------------------------*
  Za primer večjega programa se spomnimo programa za izračun Fibonaccijevih
@@ -153,62 +142,6 @@ type instruction =
  naslovi ukazov v programu zapisani kot celoštevilski indeksi. Pretvorbo iz
  berljivih oznak kot so `main`, `fib` in `.fib_end` bomo obravnavali kasneje.
 [*----------------------------------------------------------------------------*)
-
-(* let fibonacci n = [
-  JMP (Address 20);       (* JMP main *)
-
-(* fib: *)
-  (* ; Shranimo vrednosti registrov *)
-  PUSH (Register C);      (* PUSH C *)
-  PUSH (Register B);      (* PUSH B *)
-
-  (* ; V C shranimo začetno vrednost A *)
-  MOV (C, Register A);    (* MOV C, A *)
-
-  (* ; Če je A = 0, je to tudi rezultat *)
-  CMP (A, Const 0);       (* CMP A, 0 *)
-  JE (Address 17);        (* JE .fib_end *)
-
-  (* ; Če je A = 1, je to tudi rezultat *)
-  CMP (A, Const 1);       (* CMP A, 1 *)
-  JE (Address 17);        (* JE .fib_end *)
-
-  (* ; V nasprotnem primeru najprej izračunamo fib(A - 1) in ga shranimo v B *)
-  DEC C;                  (* DEC C *)
-  MOV (A, Register C);    (* MOV A, C *)
-  CALL (Address 1);       (* CALL fib *)
-  MOV (B, Register A);    (* MOV B, A *)
-
-  (* ; Nato izračunamo še fib(A - 2) in ga shranimo v A *)
-  DEC C;                  (* DEC C *)
-  MOV (A, Register C);    (* MOV A, C *)
-  CALL (Address 1);       (* CALL fib *)
-  
-  (* ; Nazadnje k A prištejemo še B, s čimer dobimo končni rezultat *)
-  ADD (A, Register B);    (* ADD A, B *)
-  JMP (Address 17);       (* JMP .fib_end *)
-
-(* .fib_end: *)
-  (* ; Povrnemo vrednosti registrov in vrnemo rezultat *)
-  POP B;                  (* POP B *)
-  POP C;                  (* POP C *)
-  RET;                    (* RET *)
-
-(* main: *)
-  MOV (A, Const n);       (* MOV A, n *)
-  CALL (Address 1);       (* CALL fib *)
-  HLT;                    (* HLT *)
-] *)
-(* val fibonacci : int -> instruction list = <fun> *)
-
-(* let primer_tipi_5 = fibonacci 10 *)
-(* val primer_tipi_5 : instruction list =
-  [JMP (Address 20); PUSH (Register C); PUSH (Register B);
-   MOV (C, Register A); CMP (A, Const 0); JE (Address 17); CMP (A, Const 1);
-   JE (Address 17); DEC C; MOV (A, Register C); CALL (Address 1);
-   MOV (B, Register A); DEC C; MOV (A, Register C); CALL (Address 1);
-   ADD (A, Register B); JMP (Address 17); POP B; POP C; RET;
-   MOV (A, Const 10); CALL (Address 1); HLT] *)
 
 (*----------------------------------------------------------------------------*
  ### Pomnilnik
@@ -234,20 +167,17 @@ type instruction =
  - `stack`: seznam celoštevilskih vrednosti na skladu.
 [*----------------------------------------------------------------------------*)
 
-type state 
-
-(* let primer_tipi_6 = {
-  instructions = [| MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT |];
-  a = 1; b = 2; c = 3; d = 4;
-  ip = Address 0;
-  zero = true; carry = false;
-  stack = [5; 6; 7];
-} *)
-(* val primer_tipi_6 : state =
-  {instructions =
-    [|MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT|];
-   a = 1; b = 2; c = 3; d = 4; ip = Address 0; zero = true; carry = false;
-   stack = [5; 6; 7]} *)
+type state = {
+  instructions : instruction array;
+  a : int;
+  b : int;
+  c : int;
+  d : int;
+  ip : address;
+  zero : bool;
+  carry : bool;
+  stack : int list;
+}
 
 (*----------------------------------------------------------------------------*
  ### Začetno stanje
@@ -257,7 +187,7 @@ type state
  Prazno stanje pomnilnika lahko predstavimo z zapisom:
 [*----------------------------------------------------------------------------*)
 
-(* let empty = {
+let empty = {
   instructions = [||];
   a = 0;
   b = 0;
@@ -267,7 +197,7 @@ type state
   zero = false;
   carry = false;
   stack = [];
-} *)
+} 
 (* val empty : state =
   {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 0;
    zero = false; carry = false; stack = []} *)
@@ -280,14 +210,17 @@ type state
  seznama v tabelo pomagate z uporabo funkcije `Array.of_list`.
 [*----------------------------------------------------------------------------*)
 
-let init _ = ()
-
-(* let primer_tipi_7 = init [ MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT ] *)
-(* val primer_tipi_7 : state =
-  {instructions =
-    [|MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT|];
-   a = 0; b = 0; c = 0; d = 0; ip = Address 0; zero = false; carry = false;
-   stack = []} *)
+let init (navodila : instruction list) : state = {
+  instructions = Array.of_list navodila;
+  a = 0;
+  b = 0;
+  c = 0;
+  d = 0;
+  ip = Address 0;
+  zero = false;
+  carry = false;
+  stack = [];
+  }
 
 (*----------------------------------------------------------------------------*
  ## Izvajanje ukazov
@@ -308,42 +241,34 @@ let init _ = ()
  funkcija vrne `None`.
 [*----------------------------------------------------------------------------*)
 
-let read_instruction _ = ()
-
-(* let primer_izvajanje_1 =
-  [
-    read_instruction { empty with instructions = [| MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT |]; ip = (Address 1) };
-    read_instruction { empty with instructions = [| MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT |]; ip = (Address 3) };
-    read_instruction { empty with instructions = [| MOV (A, Register B); MOV (C, Const 42); JA (Address 10); HLT |]; ip = (Address 5) };
-  ] *)
-(* val primer_izvajanje_1 : instruction option list =
-  [Some (MOV (C, Const 42)); Some HLT; None] *)
+let read_instruction (st : state) : instruction option =
+  let ip_index = match st.ip with Address naslov -> naslov in
+  if ip_index >= 0 && ip_index < Array.length st.instructions then
+    Some (st.instructions.(ip_index))
+  else
+    None
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `read_register : state -> register -> int`, ki vrne vrednost
  registra v danem stanju.
 [*----------------------------------------------------------------------------*)
 
-let read_register _ _ = ()
-
-(* let primer_izvajanje_2 =
-  read_register { empty with a = 10; b = 42 } B *)
-(* val primer_izvajanje_2 : int = 42 *)
+let read_register (st : state) (reg : register) : int =
+  match reg with
+  | A -> st.a
+  | B -> st.b
+  | C -> st.c
+  | D -> st.d
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `read_expression : state -> expression -> int`, ki vrne
  celoštevilsko vrednost izraza v danem stanju.
 [*----------------------------------------------------------------------------*)
 
-let read_expression _ _ = ()
-
-(* let primer_izvajanje_3 =
-  read_expression { empty with a = 10; b = 20 } (Register B) *)
-(* val primer_izvajanje_3 : int = 20 *)
-
-(* let primer_izvajanje_4 =
-  read_expression { empty with a = 10; b = 20 } (Const 42) *)
-(* val primer_izvajanje_4 : int = 42 *)
+let read_expression (st : state) (expr : expression) : int =
+  match expr with
+  | Register reg -> read_register st reg
+  | Const n -> n 
 
 (*----------------------------------------------------------------------------*
  ### Spreminjanje registrov
