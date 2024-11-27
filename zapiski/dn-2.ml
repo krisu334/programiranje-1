@@ -280,13 +280,12 @@ let read_expression (st : state) (expr : expression) : int =
  novo stanje.
 [*----------------------------------------------------------------------------*)
 
-let write_register _ _ _ = ()
-
-(* let primer_izvajanje_5 =
-  write_register { empty with c = 42 } D 24 *)
-(* val primer_izvajanje_5 : state =
-  {instructions = [||]; a = 0; b = 0; c = 42; d = 24; ip = Address 0;
-   zero = false; carry = false; stack = []} *)
+let write_register (st : state) (reg : register) (vrednost : int) : state =
+  match reg with
+  | A -> { st with a = vrednost }
+  | B -> { st with b = vrednost }
+  | C -> { st with c = vrednost }
+  | D -> { st with d = vrednost }
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `perform_unop : (int -> int) -> state -> register -> state`,
@@ -294,13 +293,10 @@ let write_register _ _ _ = ()
  s spremenjenim registrom.
 [*----------------------------------------------------------------------------*)
 
-let perform_unop _ _ _ = ()
-
-(* let primer_izvajanje_6 =
-  perform_unop (fun x -> 101 * x) { empty with c = 5 } C *)
-(* val primer_izvajanje_6 : state =
-  {instructions = [||]; a = 0; b = 0; c = 505; d = 0; ip = Address 0;
-   zero = false; carry = false; stack = []} *)
+let perform_unop (f : int -> int) (st : state) (reg : register) : state =
+  let trenutno = read_register st reg in
+  let nova = f trenutno in
+  write_register st reg nova
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `perform_binop : (int -> int -> int) -> state -> register ->
@@ -308,13 +304,11 @@ let perform_unop _ _ _ = ()
  Funkcija naj vrne novo stanje s spremenjenim registrom.
 [*----------------------------------------------------------------------------*)
 
-let perform_binop _ _ _ _ = ()
-
-(* let primer_izvajanje_7 =
-  perform_binop ( * ) { empty with c = 5 } C (Const 101) *)
-(* val primer_izvajanje_7 : state =
-  {instructions = [||]; a = 0; b = 0; c = 505; d = 0; ip = Address 0;
-   zero = false; carry = false; stack = []} *)
+let perform_binop (f : int -> int -> int) (st : state) (reg : register) (expr : expression) : state =
+  let reg_vrednost = read_register st reg in
+  let expr_vrednost = read_expression st expr in
+  let new_vrednost = f reg_vrednost expr_vrednost in
+  write_register st reg new_vrednost
 
 (*----------------------------------------------------------------------------*
  ### Skoki
@@ -325,11 +319,9 @@ let perform_binop _ _ _ _ = ()
  povečan za 1, saj v našem primeru vsi ukazi zasedejo enako prostora).
 [*----------------------------------------------------------------------------*)
 
-let next _ = ()
-
-(* let primer_izvajanje_8 =
-  next (Address 41) *)
-(* val primer_izvajanje_8 : address = Address 42 *)
+let next (addr : address) : address =
+  match addr with
+  | Address n -> Address (n + 1)
 
 (*----------------------------------------------------------------------------*
  Napišite funkciji `jump : state -> address -> state` in `proceed : state ->
@@ -337,20 +329,11 @@ let next _ = ()
  naslednji ukaz.
 [*----------------------------------------------------------------------------*)
 
-let jump _ _ = ()
-let proceed _ = ()
-
-(* let primer_izvajanje_9 =
-  jump { empty with ip = Address 42} (Address 10) *)
-(* val primer_izvajanje_9 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 10;
-   zero = false; carry = false; stack = []} *)
-
-(* let primer_izvajanje_10 =
-  proceed { empty with ip = Address 42} *)
-(* val primer_izvajanje_10 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 43;
-   zero = false; carry = false; stack = []} *)
+let jump (st : state) (addr : address) : state =
+  {st with ip = addr}
+let proceed (st : state) : state =
+  let next_ip = next st.ip in
+  {st with ip = next_ip}
 
 (*----------------------------------------------------------------------------*
  Napišite funkciji `push_stack : state -> int -> state` in `pop_stack : state ->
@@ -359,21 +342,12 @@ let proceed _ = ()
  Če je sklad prazen, naj funkcija `pop_stack` sproži izjemo.
 [*----------------------------------------------------------------------------*)
 
-let push_stack _ _ = ()
-let pop_stack _ = ()
-
-(* let primer_izvajanje_10 =
-  push_stack { empty with stack = [1; 2; 3] } 42 *)
-(* val primer_izvajanje_10 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 0;
-   zero = false; carry = false; stack = [42; 1; 2; 3]} *)
-
-(* let primer_izvajanje_11 =
-  pop_stack { empty with stack = [1; 2; 3] } *)
-(* val primer_izvajanje_11 : int * state =
-  (1,
-   {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 0;
-    zero = false; carry = false; stack = [2; 3]}) *)
+let push_stack (st : state) (vrednost : int) : state =
+  {st with stack = vrednost :: st.stack}
+let pop_stack (st : state) : int * state =
+  match st.stack with
+  | [] -> failwith "Napaka"
+  | prvi :: ostali -> (prvi, {st with stack = ostali})
 
 (*----------------------------------------------------------------------------*
  ### Pogojni skoki
@@ -386,13 +360,10 @@ let pop_stack _ = ()
  kadar je prvo število manjše.Funkcija naj vrne novo stanje.
 [*----------------------------------------------------------------------------*)
 
-let compare _ _ _ = ()
-
-(* let primer_izvajanje_12 =
-  compare empty 24 42 *)
-(* val primer_izvajanje_12 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 0;
-   zero = false; carry = true; stack = []} *)
+let compare state x y =
+  let zero_zastava = (x = y) in
+  let carry_zastava = (x < y) in
+  {state with zero = zero_zastava; carry = carry_zastava}
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `conditional_jump : state -> bool -> address -> state`, ki
@@ -400,19 +371,11 @@ let compare _ _ _ = ()
  funkcija skoči na naslednji ukaz.
 [*----------------------------------------------------------------------------*)
 
-let conditional_jump _ _ _ = ()
-
-(* let primer_izvajanje_13 =
-  conditional_jump { empty with ip = Address 42 } (Address 10) true *)
-(* val primer_izvajanje_13 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 10;
-   zero = false; carry = false; stack = []} *)
-
-(* let primer_izvajanje_14 =
-  conditional_jump { empty with ip = Address 42 } (Address 10) false *)
-(* val primer_izvajanje_14 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 43;
-   zero = false; carry = false; stack = []} *)
+let conditional_jump state dani_naslov pogoj =
+  if pogoj then
+    {state with ip = dani_naslov}
+  else
+    {state with ip = next state.ip}
 
 (*----------------------------------------------------------------------------*
  ### Klici funkcij
