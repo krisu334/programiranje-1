@@ -514,10 +514,12 @@ let parse_expression str =
  `String.sub`.
 [*----------------------------------------------------------------------------*)
 
-let clean_line _ = ()
-
-let primer_branje_4 = clean_line "   MOV A, 42    ; To je komentar   "
-(* val primer_branje_4 : string = "MOV A, 42" *)
+let clean_line line =
+  let brez_comment =
+    match String.index_opt line ';' with
+    | Some idx -> String.sub line 0 idx
+    | None -> line
+  in String.trim brez_comment
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `clean_lines : string list -> string list`, ki iz seznama
@@ -525,7 +527,10 @@ let primer_branje_4 = clean_line "   MOV A, 42    ; To je komentar   "
  vrstice.
 [*----------------------------------------------------------------------------*)
 
-let clean_lines _ = ()
+let clean_lines lines =
+  lines
+  |> List.map clean_line
+  |> List.filter (fun line -> line <> "")
 
 (*----------------------------------------------------------------------------*
  ### Oznake
@@ -544,26 +549,21 @@ let clean_lines _ = ()
  podan direktno s številom ali pa z eno izmed oznak v seznamu.
 [*----------------------------------------------------------------------------*)
 
-let parse_address _ _ = ()
-
-(* let primer_branje_5 = parse_address [("main", Address 42)] "main" *)
-(* val primer_branje_5 : address = Address 42 *)
-
-(* let primer_branje_6 = parse_address [("main", Address 42)] "123" *)
-(* val primer_branje_6 : address = Address 123 *)
+let parse_address labels s =
+  match List.assoc_opt s labels with
+  | Some addr -> addr
+  | None -> Address (int_of_string s)
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `parse_label : string -> string option`, ki vrne oznako, če
  se niz konča z dvopičjem, sicer pa vrne `None`.
 [*----------------------------------------------------------------------------*)
 
-let parse_label _ = ()
-
-let primer_branje_7 = parse_label "main:"
-(* val primer_branje_7 : string option = Some "main" *)
-
-let primer_branje_8 = parse_label "MOV A, 42"
-(* val primer_branje_8 : string option = None *)
+let parse_label s =
+  if String.length s > 0 && String.get s (String.length s - 1) = ':' then
+    Some (String.sub s 0 (String.length s - 1))
+  else
+    None
 
 (*----------------------------------------------------------------------------*
  Da bomo iz kode določili oznake, napišite funkcijo `parse_labels : string list
@@ -574,18 +574,12 @@ let primer_branje_8 = parse_label "MOV A, 42"
 
 let parse_labels _ = ()
 
-let primer_branje_9 =
-  parse_labels ["JMP main"; "main:"; "MOV A, 0"; "loop:"; "INC A"; "JMP loop"]
-(* val primer_branje_9 : (string * address) list * string list =
-  ([("loop", Address 2); ("main", Address 1)],
-   ["JMP main"; "MOV A, 0"; "INC A"; "JMP loop"]) *)
-
 (*----------------------------------------------------------------------------*
  Dopolnite spodnjo funkcijo `parse_instruction : (string * address) list ->
  string -> instruction`, ki iz niza prebere ukaz.
 [*----------------------------------------------------------------------------*)
 
-(* let parse_instruction labels line =
+let parse_instruction labels line =
   let tokens =
     line
     |> String.split_on_char ' '
@@ -595,35 +589,30 @@ let primer_branje_9 =
   in
   match tokens with
   | ["MOV"; reg; exp] -> MOV (parse_register reg, parse_expression exp)
-  (* | ["ADD"; reg; exp] -> TODO *)
-  (* | ["SUB"; reg; exp] -> TODO *)
+  | ["ADD"; reg; exp] -> ADD (parse_register reg, parse_expression exp)
+  | ["SUB"; reg; exp] -> SUB (parse_register reg, parse_expression exp)
   | ["INC"; reg] -> INC (parse_register reg)
-  (* | ["DEC"; reg] -> TODO *)
-  (* | ["MUL"; exp] -> TODO *)
-  (* | ["DIV"; exp] -> TODO *)
-  (* | ["AND"; reg; exp] -> TODO *)
-  (* | ["OR"; reg; exp] -> TODO *)
-  (* | ["XOR"; reg; exp] -> TODO *)
-  (* | ["NOT"; reg] -> TODO *)
-  (* | ["CMP"; reg; exp] -> TODO *)
+  | ["DEC"; reg] -> DEC (parse_register reg)
+  | ["MUL"; exp] -> MUL (parse_expression exp)
+  | ["DIV"; exp] -> DIV (parse_expression exp)
+  | ["AND"; reg; exp] -> AND (parse_register reg, parse_expression exp)
+  | ["OR"; reg; exp] -> OR (parse_register reg, parse_expression exp)
+  | ["XOR"; reg; exp] -> XOR (parse_register reg, parse_expression exp)
+  | ["NOT"; reg] -> NOT (parse_register reg)
+  | ["CMP"; reg; exp] -> CMP (parse_register reg, parse_expression exp)
   | ["JMP"; add] -> JMP (parse_address labels add)
-  (* | ["JA"; add] -> TODO *)
-  (* | ["JAE"; add] -> TODO *)
-  (* | ["JB"; add] -> TODO *)
-  (* | ["JBE"; add] -> TODO *)
-  (* | ["JE"; add] -> TODO *)
-  (* | ["JNE"; add] -> TODO *)
-  (* | ["CALL"; add] -> TODO *)
+  | ["JA"; add] -> JA (parse_address labels add)
+  | ["JAE"; add] -> JAE (parse_address labels add)
+  | ["JB"; add] -> JB (parse_address labels add)
+  | ["JBE"; add] -> JBE (parse_address labels add)
+  | ["JE"; add] -> JE (parse_address labels add)
+  | ["JNE"; add] -> JNE (parse_address labels add)
+  | ["CALL"; add] -> CALL (parse_address labels add)
   | ["RET"] -> RET
   | ["PUSH"; exp] -> PUSH (parse_expression exp)
   | ["POP"; reg] -> POP (parse_register reg)
   | ["HLT"] -> HLT
-  | _ -> failwith ("Invalid instruction: " ^ line) *)
-
-(* let primer_branje_10 =
-  List.map (parse_instruction [("main", Address 42)]) ["MOV A, 42"; "CALL main"; "HLT"] *)
-(* val primer_branje_10 : instruction list =
-  [MOV (A, Const 42); CALL (Address 42); HLT] *)
+  | _ -> failwith ("Invalid instruction: " ^ line)
 
 (*----------------------------------------------------------------------------*
  S pomočjo zgoraj napisanih funkcij sestavite funkcijo `run : string -> state`,
