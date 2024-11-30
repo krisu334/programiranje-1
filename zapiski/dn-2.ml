@@ -187,7 +187,7 @@ type state = {
  Prazno stanje pomnilnika lahko predstavimo z zapisom:
 [*----------------------------------------------------------------------------*)
 
-let empty = {
+(*let empty = {
   instructions = [||];
   a = 0;
   b = 0;
@@ -200,7 +200,7 @@ let empty = {
 } 
 (* val empty : state =
   {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 0;
-   zero = false; carry = false; stack = []} *)
+   zero = false; carry = false; stack = []} *)*)
 
 (*----------------------------------------------------------------------------*
  Kljub temu, da so tabele učinkovitejše, so seznami za delo bolj praktični. Zato
@@ -621,9 +621,16 @@ let parse_instruction labels line =
  funkcija vrne končno stanje.
 [*----------------------------------------------------------------------------*)
 
-let run _ = ()
+let run program =
+  let lines = String.split_on_char '\n' program in
+  let brez_komentarjev = clean_lines lines in
+  let labels, instructions = parse_labels brez_komentarjev in
+  let parsed_inst = List.map (parse_instruction labels) instructions in
+  let instruction_array = Array.of_list parsed_inst in
+  let initial_state = { empty with instructions = instruction_array } in
+  run_program initial_state
 
-let fibonacci = {|
+(*let fibonacci = {|
   JMP main
   ; Funkcija, ki izračuna fib(A) in vrednost shrani v register A
   fib:
@@ -667,19 +674,4 @@ let fibonacci = {|
       MOV A, 7
       CALL fib
   HLT
-|}
-(* val fibonacci : string =
-  "\n  JMP main\n  ; Funkcija, ki izračuna fib(A) in vrednost shrani v register A\n  fib:\n      ; Shranimo vrednosti registrov\n      PUSH C\n      PUSH B\n  \n      ; V C shranimo začetno vrednost A\n      MOV C, A\n  \n      ; Če je A = 0, je to tudi rezultat\n      CMP A, 0\n      JE .fib_end\n  \n      ; Če"... (* string length 872; truncated *) *)
-
-let primer_branje_11 =
-  run fibonacci
-(* val primer_branje_11 : state =
-  {instructions =
-    [|JMP (Address 20); PUSH (Register C); PUSH (Register B);
-      MOV (C, Register A); CMP (A, Const 0); JE (Address 17);
-      CMP (A, Const 1); JE (Address 17); DEC C; MOV (A, Register C);
-      CALL (Address 1); MOV (B, Register A); DEC C; MOV (A, Register C);
-      CALL (Address 1); ADD (A, Register B); JMP (Address 17); POP B; 
-      POP C; RET; MOV (A, Const 7); CALL (Address 1); HLT|];
-   a = 13; b = 0; c = 0; d = 0; ip = Address 22; zero = true; carry = false;
-   stack = []} *)
+|}*)
