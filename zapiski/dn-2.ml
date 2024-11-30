@@ -346,7 +346,7 @@ let push_stack (st : state) (vrednost : int) : state =
   {st with stack = vrednost :: st.stack}
 let pop_stack (st : state) : int * state =
   match st.stack with
-  | [] -> failwith "Napaka"
+  | [] -> failwith "Ni elementa za odstraniti."
   | prvi :: ostali -> (prvi, {st with stack = ostali})
 
 (*----------------------------------------------------------------------------*
@@ -386,26 +386,20 @@ let conditional_jump state dani_naslov pogoj =
  na dani naslov in na sklad doda naslednji naslov.
 [*----------------------------------------------------------------------------*)
 
-let call _ _ = ()
-
-(* let primer_izvajanje_15 =
-  call { empty with ip = Address 42 } (Address 10) *)
-(* val primer_izvajanje_15 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 10;
-   zero = false; carry = false; stack = [43]} *)
+let call state target_address =
+  let Address n = state.ip in
+  let dodamo = n + 1 in
+  let nov_stack = dodamo :: state.stack in
+  { state with ip = target_address; stack = nov_stack }
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `return : state -> state`, ki v danem stanju skoči na naslov,
  ki je na vrhu sklada, in odstrani ta naslov s sklada.
 [*----------------------------------------------------------------------------*)
 
-let return _ = ()
-
-(* let primer_izvajanje_16 =
-  return { empty with ip = (Address 100); stack = [42; 43; 44] } *)
-(* val primer_izvajanje_16 : state =
-  {instructions = [||]; a = 0; b = 0; c = 0; d = 0; ip = Address 42;
-   zero = false; carry = false; stack = [43; 44]} *)
+let return state =
+  let return_address, nov_state = pop_stack state in
+  { nov_state with ip = Address return_address }
 
 (*----------------------------------------------------------------------------*
  ### Izvajanje programov
@@ -419,37 +413,41 @@ let return _ = ()
  set.html), ki smo ga pogledali na predavanjih.
 [*----------------------------------------------------------------------------*)
 
-(* let run_instruction st = function
-  (* | MOV (reg, exp) -> TODO *)
+let run_instruction st = function
+  | MOV (reg, exp) -> 
+      let premik = read_expression st exp in 
+      write_register st reg premik |> proceed
   | ADD (reg, exp) -> perform_binop ( + ) st reg exp |> proceed
-  (* | SUB (reg, exp) -> TODO *)
+  | SUB (reg, exp) -> perform_binop ( - ) st reg exp |> proceed
   | INC reg -> perform_unop succ st reg |> proceed
-  (* | DEC reg -> TODO *)
-  (* | MUL exp -> TODO *)
-  (* | DIV exp -> TODO *)
-  (* Pozor, OCaml land/lor/lxor interpretira kot simbole, zato jih pišemo infiksno! *)
+  | DEC reg -> perform_unop pred st reg |> proceed
+  | MUL exp -> perform_binop ( * ) st A exp |> proceed
+  | DIV exp -> 
+      let divisor = read_expression st exp in 
+      if divisor = 0 then failwith "Deljenje z 0."
+      else perform_binop ( / ) st A exp |> proceed
   | AND (reg, exp) -> perform_binop ( land ) st reg exp |> proceed
   | OR (reg, exp) -> perform_binop ( lor ) st reg exp |> proceed
   | XOR (reg, exp) -> perform_binop ( lxor ) st reg exp |> proceed
   | NOT reg -> perform_unop lnot st reg |> proceed
-  (* | CMP (reg, exp) -> TODO *)
-  (* | JMP add -> TODO *)
+  | CMP (reg, exp) -> 
+      let reg_value = read_register st reg in 
+      let exp_value = read_expression st exp in 
+      compare st reg_value exp_value |> proceed
+  | JMP add -> jump st add
   | JA add -> conditional_jump st add (not st.carry && not st.zero)
-  (* | JAE add -> TODO *)
-  (* | JB add -> TODO *)
-  (* | JBE add -> TODO *)
-  (* | JE add -> TODO *)
-  (* | JNE add -> TODO *)
-  (* | CALL add -> TODO *)
-  (* | RET -> TODO *)
+  | JAE add -> conditional_jump st add (not st.carry)
+  | JB add -> conditional_jump st add st.carry
+  | JBE add -> conditional_jump st add (st.carry || st.zero)
+  | JE add -> conditional_jump st add st.zero
+  | JNE add -> conditional_jump st add (not st.zero)
+  | CALL add -> call st add
+  | RET -> return st
   | PUSH exp -> push_stack st (read_expression st exp) |> proceed
   | POP reg ->
       let n, st' = pop_stack st in
       write_register st' reg n |> proceed
-  | HLT -> failwith "Cannot execute instruction" *)
-(* val run_instruction : state -> instruction -> state = <fun> *)
-
-let run_instruction _ _ = ()
+  | HLT -> failwith "Cannot execute instruction" 
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `run_program : state -> state`, ki izvaja ukaze v danem
@@ -457,22 +455,15 @@ let run_instruction _ _ = ()
  ukaznega pomnilnika. Funkcija naj vrne končno stanje.
 [*----------------------------------------------------------------------------*)
 
-let rec run_program _ = ()
-
-(* let primer_izvajanje_16 =
-  fibonacci 10
-  |> init
-  |> run_program *)
-(* val primer_izvajanje_16 : state =
-  {instructions =
-    [|JMP (Address 20); PUSH (Register C); PUSH (Register B);
-      MOV (C, Register A); CMP (A, Const 0); JE (Address 17);
-      CMP (A, Const 1); JE (Address 17); DEC C; MOV (A, Register C);
-      CALL (Address 1); MOV (B, Register A); DEC C; MOV (A, Register C);
-      CALL (Address 1); ADD (A, Register B); JMP (Address 17); POP B; 
-      POP C; RET; MOV (A, Const 10); CALL (Address 1); HLT|];
-   a = 55; b = 0; c = 0; d = 0; ip = Address 22; zero = true; carry = false;
-   stack = []} *)
+let rec run_program state =
+  let ip_val =
+    match state.ip with Address n -> n
+  in if ip_val < 0 || ip_val >= Array.length state.instructions then state
+  else
+    let instr = state.instructions.(ip_val) in
+    match instr with
+    | HLT -> state
+    | _ -> run_program (run_instruction state instr)
 
 (*----------------------------------------------------------------------------*
  ## Branje zbirnika
@@ -493,23 +484,24 @@ let rec run_program _ = ()
  register.
 [*----------------------------------------------------------------------------*)
 
-let parse_register _ = ()
-
-let primer_branje_1 = parse_register "A"
-(* val primer_branje_1 : register = A *)
+let parse_register str =
+  match String.uppercase_ascii str with
+  | "A" -> A
+  | "B" -> B
+  | "C" -> C
+  | "D" -> D
+  | _ -> failwith ("Neveljaven register.")
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `parse_expression : string -> expression`, ki iz niza prebere
  izraz.
 [*----------------------------------------------------------------------------*)
 
-let parse_expression _ = ()
-
-let primer_branje_2 = parse_expression "A"
-(* val primer_branje_2 : expression = Register A *)
-
-let primer_branje_3 = parse_expression "42"
-(* val primer_branje_3 : expression = Const 42 *)
+let parse_expression str =
+  try
+    Const (int_of_string str)
+  with Failure _ ->
+    Register (parse_register str)
 
 (*----------------------------------------------------------------------------*
  ### Čiščenje vrstic
