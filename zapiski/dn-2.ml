@@ -210,8 +210,8 @@ type state = {
  seznama v tabelo pomagate z uporabo funkcije `Array.of_list`.
 [*----------------------------------------------------------------------------*)
 
-let init (navodila : instruction list) : state = {
-  instructions = Array.of_list navodila;
+let init (ukazi : instruction list) : state = {
+  instructions = Array.of_list ukazi;
   a = 0;
   b = 0;
   c = 0;
@@ -242,7 +242,7 @@ let init (navodila : instruction list) : state = {
 [*----------------------------------------------------------------------------*)
 
 let read_instruction (st : state) : instruction option =
-  let ip_index = match st.ip with Address naslov -> naslov in
+  let Address ip_index = st.ip in
   if ip_index >= 0 && ip_index < Array.length st.instructions then
     Some (st.instructions.(ip_index))
   else
@@ -282,10 +282,10 @@ let read_expression (st : state) (expr : expression) : int =
 
 let write_register (st : state) (reg : register) (vrednost : int) : state =
   match reg with
-  | A -> { st with a = vrednost }
-  | B -> { st with b = vrednost }
-  | C -> { st with c = vrednost }
-  | D -> { st with d = vrednost }
+  | A -> {st with a = vrednost}
+  | B -> {st with b = vrednost}
+  | C -> {st with c = vrednost}
+  | D -> {st with d = vrednost}
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `perform_unop : (int -> int) -> state -> register -> state`,
@@ -307,8 +307,8 @@ let perform_unop (f : int -> int) (st : state) (reg : register) : state =
 let perform_binop (f : int -> int -> int) (st : state) (reg : register) (expr : expression) : state =
   let reg_vrednost = read_register st reg in
   let expr_vrednost = read_expression st expr in
-  let new_vrednost = f reg_vrednost expr_vrednost in
-  write_register st reg new_vrednost
+  let nova_vrednost = f reg_vrednost expr_vrednost in
+  write_register st reg nova_vrednost
 
 (*----------------------------------------------------------------------------*
  ### Skoki
@@ -331,6 +331,7 @@ let next (addr : address) : address =
 
 let jump (st : state) (addr : address) : state =
   {st with ip = addr}
+
 let proceed (st : state) : state =
   let next_ip = next st.ip in
   {st with ip = next_ip}
@@ -344,6 +345,7 @@ let proceed (st : state) : state =
 
 let push_stack (st : state) (vrednost : int) : state =
   {st with stack = vrednost :: st.stack}
+
 let pop_stack (st : state) : int * state =
   match st.stack with
   | [] -> failwith "Ni elementa za odstraniti."
@@ -361,9 +363,9 @@ let pop_stack (st : state) : int * state =
 [*----------------------------------------------------------------------------*)
 
 let compare state x y =
-  let zero_zastava = (x = y) in
-  let carry_zastava = (x < y) in
-  {state with zero = zero_zastava; carry = carry_zastava}
+  let zero_zast = (x = y) in
+  let carry_zast = (x < y) in
+  {state with zero = zero_zast; carry = carry_zast}
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `conditional_jump : state -> bool -> address -> state`, ki
@@ -390,7 +392,7 @@ let call state target_address =
   let Address n = state.ip in
   let dodamo = n + 1 in
   let nov_stack = dodamo :: state.stack in
-  { state with ip = target_address; stack = nov_stack }
+  {state with ip = target_address; stack = nov_stack}
 
 (*----------------------------------------------------------------------------*
  Napišite funkcijo `return : state -> state`, ki v danem stanju skoči na naslov,
@@ -398,8 +400,8 @@ let call state target_address =
 [*----------------------------------------------------------------------------*)
 
 let return state =
-  let return_address, nov_state = pop_stack state in
-  { nov_state with ip = Address return_address }
+  let nov_address, nov_state = pop_stack state in
+  {nov_state with ip = Address nov_address}
 
 (*----------------------------------------------------------------------------*
  ### Izvajanje programov
@@ -423,17 +425,17 @@ let run_instruction st = function
   | DEC reg -> perform_unop pred st reg |> proceed
   | MUL exp -> perform_binop ( * ) st A exp |> proceed
   | DIV exp -> 
-      let divisor = read_expression st exp in 
-      if divisor = 0 then failwith "Deljenje z 0."
+      let delitelj = read_expression st exp in 
+      if delitelj = 0 then failwith "Deljenje z 0."
       else perform_binop ( / ) st A exp |> proceed
   | AND (reg, exp) -> perform_binop ( land ) st reg exp |> proceed
   | OR (reg, exp) -> perform_binop ( lor ) st reg exp |> proceed
   | XOR (reg, exp) -> perform_binop ( lxor ) st reg exp |> proceed
   | NOT reg -> perform_unop lnot st reg |> proceed
   | CMP (reg, exp) -> 
-      let reg_value = read_register st reg in 
-      let exp_value = read_expression st exp in 
-      compare st reg_value exp_value |> proceed
+      let reg_vrednost = read_register st reg in 
+      let exp_vrednost = read_expression st exp in 
+      compare st reg_vrednost exp_vrednost |> proceed
   | JMP add -> jump st add
   | JA add -> conditional_jump st add (not st.carry && not st.zero)
   | JAE add -> conditional_jump st add (not st.carry)
@@ -445,8 +447,8 @@ let run_instruction st = function
   | RET -> return st
   | PUSH exp -> push_stack st (read_expression st exp) |> proceed
   | POP reg ->
-      let n, st' = pop_stack st in
-      write_register st' reg n |> proceed
+      let n, nov_st = pop_stack st in
+      write_register nov_st reg n |> proceed
   | HLT -> failwith "Cannot execute instruction" 
 
 (*----------------------------------------------------------------------------*
@@ -498,10 +500,9 @@ let parse_register str =
 [*----------------------------------------------------------------------------*)
 
 let parse_expression str =
-  try
-    Const (int_of_string str)
-  with Failure _ ->
-    Register (parse_register str)
+  match int_of_string_opt str with
+  | Some n -> Const n
+  | None -> Register (parse_register str)
 
 (*----------------------------------------------------------------------------*
  ### Čiščenje vrstic
@@ -572,7 +573,12 @@ let parse_label s =
  pusti nespremenjene.
 [*----------------------------------------------------------------------------*)
 
-let parse_labels _ = ()
+(*Zakomentirano, da ni vse naprej podčrtano
+let parse_labels lines =
+  match lines with
+  | [] -> 
+    
+nekje bi uporabil parse_label*)
 
 (*----------------------------------------------------------------------------*
  Dopolnite spodnjo funkcijo `parse_instruction : (string * address) list ->
@@ -627,7 +633,7 @@ let run program =
   let labels, instructions = parse_labels brez_komentarjev in
   let parsed_inst = List.map (parse_instruction labels) instructions in
   let instruction_array = Array.of_list parsed_inst in
-  let initial_state = { empty with instructions = instruction_array } in
+  let initial_state = {empty with instructions = instruction_array} in
   run_program initial_state
 
 (*let fibonacci = {|
