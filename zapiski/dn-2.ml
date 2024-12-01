@@ -362,7 +362,7 @@ let pop_stack (st : state) : int * state =
  kadar je prvo število manjše.Funkcija naj vrne novo stanje.
 [*----------------------------------------------------------------------------*)
 
-let compare state x y =
+let compare state (x : int) (y : int) =
   let zero_zast = (x = y) in
   let carry_zast = (x < y) in
   {state with zero = zero_zast; carry = carry_zast}
