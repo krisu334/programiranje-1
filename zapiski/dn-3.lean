@@ -10,9 +10,11 @@ set_option autoImplicit false
 ------------------------------------------------------------------------------/
 
 def vsota_prvih : Nat → Nat :=
-  sorry
+  fun n => match n with
+  | 0 => 0
+  | Nat.succ n' => n + vsota_prvih n'
 
-theorem gauss : (nnn : Nat) → 2 * vsota_prvih n = n * (n + 1) := by
+theorem gauss : (n : Nat) → 2 * vsota_prvih n = n * (n + 1) := by
   sorry
 
 theorem cisto_pravi_gauss : (n : Nat) → vsota_prvih n = (n * (n + 1)) / 2 := by
@@ -40,13 +42,17 @@ def stakni : {A : Type} → {m n : Nat} → Vektor A m → Vektor A n → Vektor
   | .sestavljen x xs' => by rw [Nat.add_right_comm]; exact Vektor.sestavljen x (stakni xs' ys)
 
 def obrni : {A : Type} → {n : Nat} → Vektor A n → Vektor A n :=
-  sorry
+  fun v => match v with
+  | .prazen => Vektor.prazen
+  | .sestavljen x xs => stakni (obrni xs) (Vektor.sestavljen x Vektor.prazen)
 
-def glava : sorry :=
-  sorry
+def glava : {A : Type} → {n : Nat} → Vektor A (n + 1) → A :=
+  fun v => match v with
+  | Vektor.sestavljen x _ => x
 
-def rep : sorry :=
-  sorry
+def rep : {A : Type} → {n : Nat} → Vektor A (n + 1) → Vektor A n :=
+  fun v => match v with
+  | Vektor.sestavljen _ xs => xs
 
 /------------------------------------------------------------------------------
  ## Predikatni račun
