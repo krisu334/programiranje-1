@@ -31,7 +31,12 @@ theorem gauss : (n : Nat) → 2 * vsota_prvih n = n * (n + 1) := by
     _  = (n + 1) * (n + 2) := by simp [Nat.add_comm]
 
 theorem cisto_pravi_gauss : (n : Nat) → vsota_prvih n = (n * (n + 1)) / 2 := by
-  sorry
+  intro n
+  have gauss' := gauss n
+  calc
+    vsota_prvih n
+        = (2 * vsota_prvih n) / 2 := by rw [Nat.mul_div_cancel_left (vsota_prvih n) (by decide)]
+    _   = (n * (n + 1)) / 2 := by rw [gauss']
 
 /------------------------------------------------------------------------------
  ## Vektorji
@@ -139,14 +144,29 @@ def elementi' : {A : Type} → Drevo A → List A :=
 theorem zrcali_zrcali :
   {A : Type} → (t : Drevo A) →
   zrcali (zrcali t) = t := by
-  sorry
+  intro A t
+  induction t with
+  | prazno =>
+    simp [zrcali]
+  | sestavljeno l x d ih_l ih_d =>
+    simp [zrcali]
+    rw [ih_d, ih_l]
 
 theorem visina_zrcali :
   {A : Type} → (t : Drevo A) →
   visina (zrcali t) = visina t := by
-  sorry
+  intro A t
+  induction t with
+  | prazno =>
+    simp [visina, zrcali]
+  | sestavljeno l x d ih_l ih_d =>
+    simp [visina, zrcali]
+    rw [ih_l, ih_d]
 
 theorem elementi_elementi' :
   {A : Type} → (t : Drevo A) →
   elementi t = elementi' t := by
-  sorry
+  intro A t
+  induction t with
+  | prazno =>
+    simp [elementi, elementi']
