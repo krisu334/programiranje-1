@@ -1,3 +1,4 @@
+open Classical
 set_option autoImplicit false
 
 /------------------------------------------------------------------------------
@@ -12,10 +13,22 @@ set_option autoImplicit false
 def vsota_prvih : Nat → Nat :=
   fun n => match n with
   | 0 => 0
-  | Nat.succ n' => n + vsota_prvih n'
+  | n + 1 => n + 1 + vsota_prvih n
 
 theorem gauss : (n : Nat) → 2 * vsota_prvih n = n * (n + 1) := by
-  sorry
+  intro n
+  induction n with
+  | zero =>
+    simp [vsota_prvih]
+  | succ n ih =>
+    calc
+    2 * vsota_prvih (n + 1) = 2 * ((n + 1) + vsota_prvih n) := by simp [vsota_prvih]
+    _  = 2 * (n + 1) + 2 * vsota_prvih n := by rw [Nat.mul_add]
+    _  = 2 * (n + 1) + n * (n + 1) := by rw [ih]
+    _  = 2 * (n + 1) + (n + 1) * n := by rw [Nat.mul_comm n (n + 1)]
+    _  = (n + 1) * 2 + (n + 1) * n := by rw [Nat.mul_comm (n + 1) 2]
+    _  = (n + 1) * (2 + n) := by rw [Nat.left_distrib]
+    _  = (n + 1) * (n + 2) := by simp [Nat.add_comm]
 
 theorem cisto_pravi_gauss : (n : Nat) → vsota_prvih n = (n * (n + 1)) / 2 := by
   sorry
@@ -65,17 +78,27 @@ def rep : {A : Type} → {n : Nat} → Vektor A (n + 1) → Vektor A n :=
 
 theorem forall_implies : {A : Type} → {P Q : A → Prop} →
   (∀ x, (P x → Q x)) → (∀ x, P x) → (∀ x, Q x) := by
-  sorry
+  intros A P Q h1 h2
+  intro x
+  exact h1 x (h2 x)
 
 theorem forall_implies' : {A : Type} → {P : Prop} → {Q : A → Prop} →
   (∀ x, (P → Q x)) ↔ (P → ∀ x, Q x) := by
-  sorry
+  intros A P Q
+  apply Iff.intro
+  . intros h hp x
+    apply h x
+    exact hp
+  . intros h x hp
+    apply h
+    exact hp
 
 theorem paradoks_pivca :
   {G : Type} → {P : G → Prop} →
   (g : G) →  -- (g : G) pove, da je v gostilni vsaj en gost
   ∃ (p : G), (P p → ∀ (x : G), P x) := by
-  sorry
+  intros G P g
+
 
 /------------------------------------------------------------------------------
  ## Dvojiška drevesa
