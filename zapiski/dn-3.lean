@@ -34,9 +34,6 @@ theorem cisto_pravi_gauss : (n : Nat) → vsota_prvih n = (n * (n + 1)) / 2 := b
   intro n
   have gauss' := gauss n
   calc
-    vsota_prvih n
-        = (2 * vsota_prvih n) / 2 := by rw [Nat.mul_div_cancel_left (vsota_prvih n) (by decide)]
-    _   = (n * (n + 1)) / 2 := by rw [gauss']
 
 /------------------------------------------------------------------------------
  ## Vektorji
@@ -149,8 +146,11 @@ theorem zrcali_zrcali :
   | prazno =>
     simp [zrcali]
   | sestavljeno l x d ih_l ih_d =>
-    simp [zrcali]
-    rw [ih_d, ih_l]
+    calc
+      zrcali (zrcali (.sestavljeno l x d))
+          = zrcali (.sestavljeno (zrcali d) x (zrcali l)) := by simp [zrcali]
+      _   = .sestavljeno (zrcali (zrcali l)) x (zrcali (zrcali d)) := by simp [zrcali]
+      _   = .sestavljeno l x d := by rw [ih_l, ih_d]
 
 theorem visina_zrcali :
   {A : Type} → (t : Drevo A) →
@@ -158,10 +158,15 @@ theorem visina_zrcali :
   intro A t
   induction t with
   | prazno =>
-    simp [visina, zrcali]
+    simp [zrcali, visina]
   | sestavljeno l x d ih_l ih_d =>
-    simp [visina, zrcali]
-    rw [ih_l, ih_d]
+    calc
+      visina (zrcali (.sestavljeno l x d))
+          = visina (.sestavljeno (zrcali d) x (zrcali l)) := by simp [zrcali]
+      _   = 1 + max (visina (zrcali d)) (visina (zrcali l)) := by simp [visina]
+      _   = 1 + max (visina d) (visina l) := by rw [ih_d, ih_l]
+      _   = 1 + max (visina l) (visina d) := by rw [Nat.max_comm]
+      _   = visina (.sestavljeno l x d) := by simp [visina]
 
 theorem elementi_elementi' :
   {A : Type} → (t : Drevo A) →
