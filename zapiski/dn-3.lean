@@ -147,10 +147,10 @@ theorem zrcali_zrcali :
     simp [zrcali]
   | sestavljeno l x d ih_l ih_d =>
     calc
-      zrcali (zrcali (.sestavljeno l x d))
-          = zrcali (.sestavljeno (zrcali d) x (zrcali l)) := by simp [zrcali]
-      _   = .sestavljeno (zrcali (zrcali l)) x (zrcali (zrcali d)) := by simp [zrcali]
-      _   = .sestavljeno l x d := by rw [ih_l, ih_d]
+    zrcali (zrcali (.sestavljeno l x d))
+        = zrcali (.sestavljeno (zrcali d) x (zrcali l)) := by simp [zrcali]
+    _   = .sestavljeno (zrcali (zrcali l)) x (zrcali (zrcali d)) := by simp [zrcali]
+    _   = .sestavljeno l x d := by rw [ih_l, ih_d]
 
 theorem visina_zrcali :
   {A : Type} → (t : Drevo A) →
@@ -161,12 +161,12 @@ theorem visina_zrcali :
     simp [zrcali, visina]
   | sestavljeno l x d ih_l ih_d =>
     calc
-      visina (zrcali (.sestavljeno l x d))
-          = visina (.sestavljeno (zrcali d) x (zrcali l)) := by simp [zrcali]
-      _   = 1 + max (visina (zrcali d)) (visina (zrcali l)) := by simp [visina]
-      _   = 1 + max (visina d) (visina l) := by rw [ih_d, ih_l]
-      _   = 1 + max (visina l) (visina d) := by rw [Nat.max_comm]
-      _   = visina (.sestavljeno l x d) := by simp [visina]
+    visina (zrcali (.sestavljeno l x d))
+        = visina (.sestavljeno (zrcali d) x (zrcali l)) := by simp [zrcali]
+    _   = 1 + max (visina (zrcali d)) (visina (zrcali l)) := by simp [visina]
+    _   = 1 + max (visina d) (visina l) := by rw [ih_d, ih_l]
+    _   = 1 + max (visina l) (visina d) := by rw [Nat.max_comm]
+    _   = visina (.sestavljeno l x d) := by simp [visina]
 
 theorem elementi_elementi' :
   {A : Type} → (t : Drevo A) →
