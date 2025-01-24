@@ -45,31 +45,46 @@ module type TAPE = sig
 end
 
 module Tape : TAPE = struct
-  type t = unit
+  type t = {left: char list; head: char; right: char list}
 
-  let make _ = ()
-  let move _ _ = ()
-  let read _ = ' '
-  let write _ _ = ()
-  let print _ = ()
+  let make niz =
+    let rec string_to_chars str indeks zbirno_mesto =
+      if indeks < 0 then zbirno_mesto
+      else string_to_chars str (indeks - 1) (str.[indeks] :: zbirno_mesto) in
+    let char_list = string_to_chars niz (String.length niz - 1) [] in
+    match char_list with
+    | [] -> {left = []; head = ' '; right = []}
+    | h :: t -> {left = []; head = h; right = t}
+    
+  let move dir tape =
+    match dir with
+    | Left -> (
+        match tape.left with
+        | [] -> {left = []; head = ' '; right = tape.head :: tape.right}
+        | h :: t -> {left = t; head = h; right = tape.head :: tape.right})
+    | Right -> (
+        match tape.right with
+        | [] -> { left = tape.head :: tape.left; head = ' '; right = [] }
+        | h :: t -> { left = tape.head :: tape.left; head = h; right = t })
+
+  let read tape =
+    tape.head
+    
+  let write nov tape =
+    {tape with head = nov}
+
+  let print tape =
+    let rec list_to_string list =
+      match list with
+      | [] -> ""
+      | c :: ostali -> String.make 1 c ^ list_to_string ostali in
+    let str_levo = list_to_string (List.rev tape.left) in
+    let str_desno = list_to_string tape.right in
+    let str_cel = str_levo ^ String.make 1 tape.head ^ str_desno in
+    let head_mesto = String.length str_levo in
+    Printf.printf "%s\n" str_cel;
+    Printf.printf "%s^\n" (String.make head_mesto ' ')
 end
-
-let primer_trak = Tape.(
-  make "ABCDE"
-  |> move Left
-  |> move Left
-  |> move Right
-  |> move Right
-  |> move Right
-  |> move Right
-  |> write '!'
-  |> print
-)
-(*
-AB!DE
-  ^
-*)
-(* val primer_trak : unit = () *)
 
 (*----------------------------------------------------------------------------*
  ## Implementacija Turingovih strojev
@@ -103,11 +118,31 @@ module type MACHINE = sig
 end
 
 module Machine : MACHINE = struct
-  type t = unit
-  let make _ _ = ()
-  let initial _ = ""
-  let add_transition _ _ _ _ _ _ = ()
-  let step _ _ _ = None
+  type t = {
+    initial_state : state;
+    states : state list;
+    transitions : (state * char * state * char * direction) list;
+  } (*prvi state je trenutni, prvi char je začetni v head, drugi state je nov in drugi char tisti, ki ga napiše*)
+  
+  let make initial_state states =
+    {initial_state; states; transitions = []}
+
+  let initial machine =
+    machine.initial_state
+
+  let add_transition trenutno beri_c next pisi_c dir machine =
+    {machine with transitions = (trenutno, beri_c, next, pisi_c, dir) :: machine.transitions}
+
+  let step machine trenutno_st tape =
+    let char_head = Tape.read tape in
+    let najdi_transition (state, read, _, _, _) =
+      state = trenutno_st && read = char_head in
+    match List.find_opt najdi_transition machine.transitions with
+    | None -> None
+    | Some (_, _, next, pisi_c, direction) ->
+        let nov_tape = Tape.write pisi_c tape in
+        let move_tape = Tape.move direction nov_tape in
+        Some (next, move_tape)
 end
 
 (*----------------------------------------------------------------------------*
@@ -136,50 +171,22 @@ let binary_increment =
  izvajanja.
 [*----------------------------------------------------------------------------*)
 
-let slow_run _ _ = ()
+let slow_run machine input =
+  let rec run trenutno_st tape =
+    Tape.print tape;
+    Printf.printf "%s\n" trenutno_st;
+    match Machine.step machine trenutno_st tape with
+    | None -> ()
+    | Some (next, nov_tape) -> run next nov_tape
+  in run (Machine.initial machine) (Tape.make input)
 
-let primer_slow_run =
-  slow_run binary_increment "1011"
-(*
-1011
-^
-right
-1011
-  ^
-right
-1011
-  ^
-right
-1011
-    ^
-right
-1011
-    ^
-right
-1011
-    ^
-carry
-1010
-  ^
-carry
-1000
-  ^
-carry
-1100
-^
-done
-*)
-(* val primer_slow_run : unit = () *)
-
-let speed_run _ _ = ()
-
-let primer_speed_run =
-  speed_run binary_increment "1011"
-(*
-1100
-^
-*)
-(* val primer_speed_run : unit = () *)
+let speed_run machine input =
+  let rec run trenutno_st tape =
+    match Machine.step machine trenutno_st tape with
+    | None -> tape
+    | Some (next, nov_tape) -> run next nov_tape
+  in let konec = run (Machine.initial machine) (Tape.make input)
+  in Tape.print konec
 
 (*----------------------------------------------------------------------------*
  ## Krajši zapis
@@ -202,17 +209,27 @@ let primer_speed_run =
  Implementacijo in tipe ugotovite sami.
 [*----------------------------------------------------------------------------*)
 
-(* let binary_increment' =
-  Machine.make "right" ["carry"; "done"]
-  |> for_state "right" [
-    for_characters "01" @@ move Right;
-    for_character ' ' @@ switch_and_move "carry" Left
-  ]
-  |> for_state "carry" [
-    for_character '1' @@ switch_and_move "carry" Left;
-    for_characters "0 " @@ write_switch_and_move '1' "done" Left
-  ]   *)
-(* val binary_increment' : Machine.t = <abstr> *)
+let for_state state transitions machine =
+  List.
+
+let for_character c (next, pisi_c, dir) =
+  [(c, next, (match pisi_c with None -> c | Some nov_znak -> nov_znak), dir)]
+
+let for_characters chars (next, pisi_c, dir) =
+  let najdi_c char =
+    let pisi = match pisi_c with
+      | None -> char 
+      | Some znak -> znak 
+    in (char, next, pisi, dir)
+  in List.init (String.length chars) (fun i -> najdi_c chars.[i])
+
+let move dir = (None, None, dir)
+
+let switch_and_move next dir = (Some next, None, dir)
+
+let write_and_move pisi_c dir = (None, Some pisi_c, dir)
+
+let write_switch_and_move pisi_c next dir = (Some next, Some pisi_c, dir)
 
 (*----------------------------------------------------------------------------*
  ## Primeri Turingovih strojev
@@ -235,9 +252,10 @@ let primer_speed_run =
  Sestavite Turingov stroj, ki začetni niz obrne na glavo.
 [*----------------------------------------------------------------------------*)
 
-let reverse = ()
+let reverse =
+  Machine.make ""
 
-let primer_reverse = speed_run reverse "0000111001"
+(*let primer_reverse = speed_run reverse "0000111001"*)
 (* 
 1001110000          
 ^
@@ -252,14 +270,36 @@ let primer_reverse = speed_run reverse "0000111001"
  Sestavite Turingov stroj, ki podvoji začetni niz.
 [*----------------------------------------------------------------------------*)
 
-let duplicate = ()
-
-let primer_duplicate = speed_run duplicate "010011"
-(* 
-001100001111       
-^
-*)
-(* val primer_duplicate : unit = () *)
+let duplicate =
+  Machine.make "right" ["zacetek"; "beri"; "pisi_0x2"; "nesi_eno_0";
+   "pisi_1x2"; "nesi_eno_1"; "done"]
+  |> for_state "right" [
+    for_characters "01" @@ move Right;
+    for_character ' ' @@ write_switch_and_move 'C' "zacetek" Left
+  ]
+  |> for_state "zacetek" [
+    for_characters "01C" @@ move Left;
+    for_character ' ' @@ switch_and_move "beri" Right
+  ]
+  |> for_state "beri" [
+    for_character '0' @@ write_switch_and_move ' ' "pisi_0x2" Right;
+    for_character '1' @@ write_switch_and_move ' ' "pisi_1x2" Right;
+    for_character 'C' @@ write_switch_and_move ' ' "done" Right;
+  ]
+  |> for_state "pisi_0x2" [
+    for_characters "01C" @@ move Right;
+    for_character ' ' @@ write_switch_and_move '0' "pisi_0x1" Right
+  ]
+  |> for_state "pisi_1x2" [
+    for_characters "01C" @@ move Right;
+    for_character ' ' @@ write_switch_and_move '1' "pisi_1x1" Right
+  ]
+  |> for_state "pisi_0x1" [
+    for_character ' ' @@ write_switch_and_move '0' "zacetek" Left
+  ]
+  |> for_state "pisi_1x1" [
+    for_character ' ' @@ write_switch_and_move '1' "zacetek" Left
+  ]
 
 (*----------------------------------------------------------------------------*
  ### Eniški zapis
@@ -270,9 +310,10 @@ let primer_duplicate = speed_run duplicate "010011"
  v dvojiškem zapisu, na koncu pa naj bo na traku zapisanih natanko $n$ enic.
 [*----------------------------------------------------------------------------*)
 
-let to_unary = ()
+let to_unary = 
+  Machine.make 
 
-let primer_to_unary = speed_run to_unary "1010"
+(*let primer_to_unary = speed_run to_unary "1010"*)
 (* 
 1111111111
 ^
@@ -289,9 +330,10 @@ let primer_to_unary = speed_run to_unary "1010"
  dvojiškem zapisu.
 [*----------------------------------------------------------------------------*)
 
-let to_binary = ()
+let to_binary =
+  Machine.make "zapisi" []
 
-let primer_to_binary = speed_run to_binary (String.make 42 '1')
+(*let primer_to_binary = speed_run to_binary (String.make 42 '1')*)
 (* 
 101010                                           
 ^
